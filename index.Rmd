@@ -1,0 +1,360 @@
+---
+title: "Análise da Conservação da Biodiversidade pelo Manejo de Espécies Ameaçadas de Extinção"
+author: "Vanessa Silva"
+date: "19/01/2022"
+output: html_document
+---
+
+## **1. Descrição geral do problema**
+```{r pressure, echo=FALSE, out.width = '100%'}
+knitr::include_graphics("img/img.png")
+```
+
+
+
+## **2. Carregando Dados**
+
+### **2.1 Importando bibliotecas necessárias**
+
+Começaremos nosso projeto, importanto todas as bilbiotecas necessárias, para a realização da fase de transformação dos dados.
+```{r warning=FALSE, message=FALSE}
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(knitr)
+
+```
+
+### **2.2 Carregando Dados**
+
+Fonte: [Portal de Dados Abertos MMA](http://dados.mma.gov.br/dataset/41a79b71-445f-4a6a-8c70-d46af991292a/resource/1f13b062-f3f6-4198-a4c5-3581548bebec/download/lista-de-especies-ameacas-2020.csv)
+
+```{r}
+# Carregando conjunto de dados.
+df <- read.csv("lista-de-especies-ameacas-2020.csv", header = T, sep = ";", fileEncoding = "utf8")
+```
+
+```{r}
+# Renomeando as colunas para facilitar a manipulação dos dados
+colnames(df) = c('Grupao', 'Grupo','Familia', 'Especie', 'NomeComum', 'CategoriaAmeaca', 'SiglaCategoria','Bioma', 'PrincipaisAmeacas', 'AreasProtegidas', 'PAN', 'OrdenamentoPesqueiro', 'ProtecaoNacional', 'ExclusivaBrasil', 'EstadosOcorrencia')
+```
+
+```{r}
+# Exibindo as primeiras linhas e algumas colunas do Dataset.
+kable(head(df[,c(1:4,8,9,15)]))
+```
+## **3. Preparando, lmpeza e transformação dos dados para a construção do dashboard**
+Antes de prosseguirmos, é importante destacar a informação que cada variável representa:
+
+| Variável                               | Tipo      | Descrição                                                                                                              |
+|:---------------------------------------|:----------|:-----------------------------------------------------------------------------------------------------------------------|
+| **Fauna/Flora** |*object*   | É o conjunto de táxons de plantas e/ou animais;                                                                                         |
+| **Grupo**|*object*   | Classificação geral;                                                                                           |
+| **Família** |*object*   | É constituída por um conjunto de gêneros;                                                                                         |
+| **Espécie (Simplificado)** |*object*   | Nome cientíco da espécie sem o autor;                                                                                           |
+| **Nome Comum**|*object*   | Como a espécie é conhecida popularmente;                                                                                         |
+| **Categoria de Ameaça**  |*object*   | Categoria de risco de extinção;                                                                                           |
+| **Sigla Categoria de Ameaça**|*object*   | Abreviação de categoria de ameaça;                                                                                         |
+| **Bioma** |*object*   | Tipo de ecossitema de um espaço geográfico;                                                                                           |
+| **Principais Ameaças**|*object*   | Fatores prejudiciais para as espécies;                                                                                         |
+| **Presença em Áreas Protegidas** |*object*   | Presença ou não em áreas protegidas;                                                                                           |
+| **Plano de Ação Nacional para Conservação**|*object*   | Presença em planos de proteção nacionl;                                                                                         |
+| **Ordenamento Pesqueiro**|*object*   | É o conjunto de normas e ações que permitem administrar a atividade pesqueira;                                                                                           |
+| **Nível de Proteção na Estratégia Nacional**|*float64*  | Categorização na urgência da conservação das espécies (0 a 5, sendo 0 a mais urgente e 5, a menos);                                                                                         |
+| **Espécie exclusiva do Brasil**|*object*   | Espécies que só podem ser encontradas no Brasil;                                                                                           |
+| **Estados de Ocorrência**|*object*   | Estados onde foi identificado a presença da espécie;                                                                                         |
+
+### **3.1 Visão geral dos dados**
+```{r}
+# Verificando as dimensões do dataset.
+dim(df)
+```
+
+```{r}
+glimpse(df)
+```
+
+O conjunto de dados possui **15 variáveis**, e **3287 observações**, agora vamos verificar se há algum valor ausente nos dados.
+```{r}
+# Verificando o número de NAs existentes dentro do dataset.
+kable(sapply(df, function(x) sum(is.na((x)))), col.names = c("NA's")) 
+```
+**Há uma coluna com valor nulo** dentro do dataset que precisa ser removida, vamos verificar a linha para confirmar se é possível remove-la completamente.
+```{r}
+df[df$ProtecaoNacional == " ",1:6]
+```
+ 
+Como podemos ver, embora apenas a coluna Proteção Nacional apresente valores em falta, a consulta anterior verificou que não existem valores para toda a linha. Como não há nada relevante, podemos excluí-lo.
+
+```{r}
+df = na.omit(df)
+# Varificando o dataset novamente
+dim(df)
+```
+
+Os dados extraídos do MMA são apenas para espécies ameaçadas, por isso adicionaremos espécies extintas abaixo, de acordo com a Portaria nº 444 de 17 de dezembro de 2014 (Anexo II).
+```{r}
+x <- data.frame(
+  Grupao = c("Fauna","Fauna", "Fauna","Fauna","Fauna","Fauna","Fauna","Fauna","Fauna","Fauna"),
+  Grupo = c("Mamíferos", "Aves", "Aves","Aves","Aves","Aves","Aves","Anfíbios","Peixes Marinhos", "Peixes Marinhos"),
+  Familia = c("Cricetidae","Scolopacidae","Strigidae","Psittacidae", "Furnariidae","Furnariidae", "Icteridae","Phyllomedusidae", "Carcharhinidae", "Scyliorhinidae"),
+  Especie = c("Noronhomys vespuccii","Numenius borealis", "Glaucidium mooreorum","Anodorhynchus glaucus", "Philydor novaesi", "Cichlocolaptes mazarbarnetti", "Sturnella defilippii","Phrynomedusa fimbriata", "Carcharhinus isodon","Schroederichthys bivius"),
+  NomeComum = c("rato-de-noronha","maçarico-esquimó", "caburé-de-pernambuco","arara-azul-pequena", "limpa-folha-do-nordeste", "gritador-do-nordeste", "peito-vermelho-grande"," perereca-verde-de-fímbria","tubarão-dente-de-agulha","tubarão-lagarto"),
+  CategoriaAmeaca = c("Extinta (EX)","Regionalmente Extinta (RE)","Extinta (EX)","Regionalmente Extinta (RE)", "Extinta (EX)", "Extinta (EX)", "Regionalmente Extinta (RE)","Extinta (EX)","Regionalmente Extinta (RE)","Regionalmente Extinta (RE)"),
+  SiglaCategoria = c("EX","RE","EX","RE", "EX","EX", "RE","EX","RE","RE"),
+  Bioma = c("Mata Atlântica;Ilha oceânica","Pampa;Mata Atlântica;Pantanal","Mata Atlântica","Mata Atlântica","Mata Atlântica","Mata Atlântica", "Pampa","Mata Atlântica","Marinho","Marinho"),
+  PrincipaisAmeacas = c("perda de habitat/degradaçao (induzida por humanos)","caça/pesca/captura;perda de habitat/degradaçao (induzida por humanos)","perda de habitat/degradaçao (induzida por humanos)","agropecuaria;perda de habitat/degradaçao (induzida por humanos);caça/pesca/captura","agropecuaria;perda de habitat/degradaçao (induzida por humanos)","perda de habitat/degradaçao (induzida por humanos)","perda de habitat/degradaçao (induzida por humanos)","ameaça desconhecida","caça/pesca/captura","caça/pesca/captura"),
+  AreasProtegidas = c("Não","Não","Não", "Não","Não","Não","Não","Não","Não","Não"),
+  PAN = c("Não","Não","Não", "Não","Não","Não","Não","Não","Não","Não"),
+  OrdenamentoPesqueiro = c("Não","Não","Não", "Não","Não","Não","Não","Não","Não","Não"),
+  ProtecaoNacional = c("0","0","0", "0", "0","0","0","0","0","0"),
+  ExclusivaBrasil = c("Sim", "Não","Sim","Não", "Sim","Sim","Não","Sim","Não","Não"),
+  EstadosOcorrencia = c("PE", "AM;MG;SP", "PE;AL;PB", "PR", "PE;AL","PE;AL","RS","SP","SP;SC","RS")
+  )
+
+df <- rbind(df,x)
+
+```
+
+
+Agora vamos ver quantos valores únicos cada coluna tem e se existem outliers.
+```{r}
+# Contabilizando o número de valores únicos em cada variável do dataset.
+
+NUniques = sapply(df, function(x) length(unique((x)))) 
+# Determinando o tipo de dado de cada uma das variáveis do dataset.
+
+NUniques = data.frame(NUniques)
+
+# Atribuindo informações sobre o tipo de dado das variáveis ao DataFrame.
+
+NUniques['dtypes'] = sapply(df, function(x) class((x)))
+
+# Exibindo Dataframe.
+
+NUniques
+
+```
+
+### **3.2 Verificando e eliminando outliers**
+
+Vamos verificar o valor de cada coluna e comparar com o número de valores únicos na consulta anterior.
+```{r}
+# Coluna Fauna/Flora
+data.frame(table(df$Grupao))
+```
+ 
+```{r}
+# Coluna Grupo
+data.frame(sort(table(df$Grupo), decreasing = T))
+```
+
+```{r}
+# Coluna Familia e Especie
+df$Familia <- str_trim(df$Familia)
+df$Especie <- str_trim(df$Especie)
+
+n_rows <- n_distinct(df$Familia)
+n_rows['n_especie'] <- n_distinct(df$Especie)
+names(n_rows)[1] <- 'n_familia'
+
+n_rows
+```
+
+```{r}
+# Coluna Categoria de Ameaça
+data.frame(sort(table(df$CategoriaAmeaca), decreasing = T))
+```
+
+Três categorias devem ser unificadas: **(Criticamente em Perigo (CR)/Possivelmente Extinto (PEX) e Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW))**, iremos fazer isso mais abaixo.
+```{r}
+# Coluna Presença em Áreas Protegidas
+data.frame(sort(table(df$AreasProtegidas), decreasing = T)) 
+```
+```{r}
+# Coluna Plano de Ação Nacional para Conservação (PAN)
+data.frame(sort(table(df$PAN),decreasing = T)) 
+```
+
+```{r}
+# Coluna Ordenamento Pesqueiro
+data.frame(table(df$OrdenamentoPesqueiro))
+```
+
+```{r}
+# Coluna Nível de Proteção na Estratégia Nacional
+data.frame(sort(table(df$ProtecaoNacional), decreasing = T))
+```
+
+```{r}
+# Coluna Espécie exclusiva do Brasil
+data.frame(sort(table(df$ExclusivaBrasil),decreasing = T)) 
+```
+Vamos começar unindo os dados de categoria de ameaça.
+```{r}
+
+categoriaAmeaca <- select(df, Grupao, Grupo, Familia, Especie, NomeComum, CategoriaAmeaca)
+
+categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW)" | categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto (PEX)",]$CategoriaAmeaca = "Criticamente em Perigo (CR)"
+
+# Visualizando os dados novamente
+data.frame(sort(table(categoriaAmeaca$CategoriaAmeaca), decreasing = T))
+```
+ 
+As colunas **Bioma, Principais Ameaças e Estados de Ocorrência** também estao bagunçadas, com varias informaçoes em uma única linha. Vamos começar a separar pela coluna *Bioma*. Mas primeiro vamos arrumar os dados que estao sem delimitador.
+
+```{r}
+df[df$Bioma == "Caatinga Cerrado",]$Bioma = "Caatinga;Cerrado" 
+```
+
+```{r}
+bioma <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, Bioma)
+bioma <- bioma %>% separate_rows(Bioma, sep = c("[';'|',']"))
+bioma <- bioma[!(bioma$Bioma == ""),]
+bioma$Bioma <- str_trim(bioma$Bioma)
+data.frame(sort(table(bioma$Bioma), decreasing = T))
+```
+Agora o mesmo processo com a coluna *Estados*  e depois *Principais Ameaças*
+```{r}
+estados <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, EstadosOcorrencia)
+estados <- estados %>% separate_rows(EstadosOcorrencia, sep = c("[';'|',']"))
+estados$EstadosOcorrencia <- str_trim(estados$EstadosOcorrencia)
+estados <- estados[!(estados$EstadosOcorrencia == ""),]
+data.frame(sort(table(estados$EstadosOcorrencia), decreasing = T))
+```
+Ainda verificamos 5 linhas com dois estados, porém sem separador, entao iremos alterar para realizar a separaçao novamente.
+```{r}
+estados[nchar(estados$EstadosOcorrencia)==5,]$EstadosOcorrencia <- str_replace(estados[nchar(estados$EstadosOcorrencia)==5,]$EstadosOcorrencia, ' ',';')
+estados <- estados %>% separate_rows(EstadosOcorrencia, sep = c(sep = c("[';'|',']")))
+estados[estados$EstadosOcorrencia == "Pl",]$EstadosOcorrencia = "PI" 
+data.frame(sort(table(estados$EstadosOcorrencia), decreasing = T))
+```
+Primeiro iremos padronizar a coluna *Principais Ameaças* remover os acentos para posteriormente fazer a separaçao em linha.
+```{r}
+rm_accent <- function(str,pattern="all") {
+
+  # Exemplo: pattern = c("´", "^") retirará os acentos agudos e circunflexos apenas.
+  # Outras palavras aceitas: "all" (retira todos os acentos, que são "´", "`", "^", "~", "¨", "ç")
+  if(!is.character(str))
+    str <- as.character(str)
+
+  pattern <- unique(pattern)
+
+
+  symbols <- c(
+    acute = "áéíóúÁÉÍÓÚýÝ",
+    grave = "àèìòùÀÈÌÒÙ",
+    circunflex = "âêîôûÂÊÎÔÛ",
+    tilde = "ãõÃÕñÑ",
+    umlaut = "äëïöüÄËÏÖÜÿ"
+  )
+
+  nudeSymbols <- c(
+    acute = "aeiouAEIOUyY",
+    grave = "aeiouAEIOU",
+    circunflex = "aeiouAEIOU",
+    tilde = "aoAOnN",
+    umlaut = "aeiouAEIOUy"
+  )
+
+  accentTypes <- c("´","`","^","~","¨")
+
+  if(any(c("all","al","a","todos","t","to","tod","todo")%in%pattern)) # opcao retirar todos
+    return(chartr(paste(symbols, collapse=""), paste(nudeSymbols, collapse=""), str))
+
+  for(i in which(accentTypes%in%pattern))
+    str <- chartr(symbols[i],nudeSymbols[i], str)
+
+  return(str)
+}
+```
+
+
+```{r}
+# Aplicando a funçao e a separaçao aos dados da coluna Principais Ameaças
+principaisAmeacas <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, PrincipaisAmeacas)
+
+principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep = c("[';'|',']"))
+
+principaisAmeacas$PrincipaisAmeacas <- str_trim(rm_accent(tolower(principaisAmeacas$PrincipaisAmeacas)))
+
+principaisAmeacas$PrincipaisAmeacas <- gsub("\\:\\s",":", principaisAmeacas$PrincipaisAmeacas)
+
+```
+
+```{r echo=FALSE}
+# Dados com duas informações sem separador, além disso há muitas categorias que podem ser unidas em uma única 
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "assentamentos humanos:cidades" | principaisAmeacas$PrincipaisAmeacas == "assentamento humano:cidades",]$PrincipaisAmeacas = "expansão urbana"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "ameaca desconhecida" | principaisAmeacas$PrincipaisAmeacas == "assentamento humano:cidades",]$PrincipaisAmeacas = "ameaça desconhecida"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "mudanca na dinamica das especies nativas" | principaisAmeacas$PrincipaisAmeacas == "mudanças na dinamica das especies nativas" | principaisAmeacas$PrincipaisAmeacas == "mudança na dinamica das especies nativas",]$PrincipaisAmeacas = "mudanças na dinamica das especies nativas"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "agropecuaria aquacultura",]$PrincipaisAmeacas = "aquicultura"
+
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extraçao direta" | principaisAmeacas$PrincipaisAmeacas == "extraçao direta/coleta",]$PrincipaisAmeacas = "coleta"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extracao direta:remocao de corais",]$PrincipaisAmeacas = "remoçao de corais"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extracao direta:caça/pesca",]$PrincipaisAmeacas = "caça/pesca/captura"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extraçao de madeira" | principaisAmeacas$PrincipaisAmeacas == "extraçao madereira",]$PrincipaisAmeacas = 'extraçao de madeira'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaolinhas de energia",]$PrincipaisAmeacas = "Turismo desordenado;Produção de energia"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoqueimadas",]$PrincipaisAmeacas = "Turismo desordenado;queimadas"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoagropecuaria",]$PrincipaisAmeacas = "Turismo desordenado;agropecuaria"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoassentamentos humanos:cidades",]$PrincipaisAmeacas = "Turismo desordenado;expansão urbana"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "mineracao",]$PrincipaisAmeacas = "mineraçao"
+ 
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "outras atividades economicas:barrages abastecimento/drenagem",]$PrincipaisAmeacas = 'barragens;abastecimento/drenagem'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "linhas de energia" | principaisAmeacas$PrincipaisAmeacas == "outras atividades economicas:energia",]$PrincipaisAmeacas = 'Produção de energia'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "outras atividades economicas:industrias",]$PrincipaisAmeacas = 'industrias'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "outras atividades economicas:transporte" | principaisAmeacas$PrincipaisAmeacas =="transporte aquatico" | principaisAmeacas$PrincipaisAmeacas =="transporte terrestre/aereo",]$PrincipaisAmeacas = "transportes (terrestre/aereo/aquatico)"
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "poluiçao assoreamento",]$PrincipaisAmeacas = 'poluiçao;assoreamento'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "outras atividades economicas:turismo",]$PrincipaisAmeacas = 'Turismo desordenado'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçao",]$PrincipaisAmeacas = 'Turismo desordenado'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "disturbio humano",]$PrincipaisAmeacas = 'perda de habitat/degradaçao (induzida por humanos)'
+
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "telecomunicaçao",]$PrincipaisAmeacas = 'desenvolvimento e infraestrutura'
+
+principaisAmeacas <- principaisAmeacas[!(principaisAmeacas$PrincipaisAmeacas == ""),]
+
+principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep = c(";"))
+
+```
+
+```{r echo=FALSE}
+# Salvando os datasets em arquivos para construir o dashboard no PowerBI
+write.csv(bioma, "biomas.csv", row.names = FALSE)
+write.csv(categoriaAmeaca, "categoria_ameaca.csv", row.names = FALSE)
+write.csv(estados, "estados.csv", row.names = FALSE)
+write.csv(principaisAmeacas, "principais_ameacas.csv", row.names = FALSE)
+especies <- df %>% select("Grupao", "Grupo", "Familia", "Especie", "NomeComum", "AreasProtegidas", "PAN", "OrdenamentoPesqueiro", "ProtecaoNacional", "ExclusivaBrasil") 
+write.csv(especies, "especies.csv", row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
