@@ -31,7 +31,7 @@ Fonte: [Portal de Dados Abertos MMA](http://dados.mma.gov.br/dataset/41a79b71-44
 
 ```{r}
 # Carregando conjunto de dados.
-df <- read.csv("lista-de-especies-ameacas-2020.csv", header = T, sep = ";", fileEncoding = "utf8")
+df <- read.csv("arquivos/lista-de-especies-ameacas-2020.csv", header = T, sep = ";", fileEncoding = "utf8")
 ```
 
 ```{r}
@@ -337,12 +337,12 @@ principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep 
 
 ```{r echo=FALSE}
 # Salvando os datasets em arquivos para construir o dashboard no PowerBI
-write.csv(bioma, "biomas.csv", row.names = FALSE)
-write.csv(categoriaAmeaca, "categoria_ameaca.csv", row.names = FALSE)
-write.csv(estados, "estados.csv", row.names = FALSE)
-write.csv(principaisAmeacas, "principais_ameacas.csv", row.names = FALSE)
+write.csv(bioma, "arquivos/biomas.csv", row.names = FALSE)
+write.csv(categoriaAmeaca, "arquivos/categoria_ameaca.csv", row.names = FALSE)
+write.csv(estados, "arquivos/estados.csv", row.names = FALSE)
+write.csv(principaisAmeacas, "arquivos/principais_ameacas.csv", row.names = FALSE)
 especies <- df %>% select("Grupao", "Grupo", "Familia", "Especie", "NomeComum", "AreasProtegidas", "PAN", "OrdenamentoPesqueiro", "ProtecaoNacional", "ExclusivaBrasil") 
-write.csv(especies, "especies.csv", row.names = FALSE)
+write.csv(especies, "arquivos/especies.csv", row.names = FALSE)
 ```
 
 
