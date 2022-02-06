@@ -170,7 +170,7 @@ pre code {
 
 </div>
 
-<iframe title="EspeciesAmeacadas - Inicio" width="1140" height="541.25" src="https://app.powerbi.com/reportEmbed?reportId=76d61728-2052-46ed-98f9-5f9668bc3f3a&autoAuth=true&ctid=37b4cc30-3315-4598-89e5-e6190a702bc0&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWJyYXppbC1zb3V0aC1iLXByaW1hcnktcmVkaXJlY3QuYW5hbHlzaXMud2luZG93cy5uZXQvIn0%3D" frameborder="0" allowFullScreen="true"></iframe>
+<script type='text/javascript' src='https://prod-useast-b.online.tableau.com/javascripts/api/viz_v1.js'></script><div class='tableauPlaceholder' style='width: 1000px; height: 827px;'><object class='tableauViz' width='1000' height='827' style='display:none;'><param name='host_url' value='https%3A%2F%2Fprod-useast-b.online.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='&#47;t&#47;vanessasilva' /><param name='name' value='EspeciesAmeacadas&#47;Fauna' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='showAppBanner' value='false' /></object></div>
 
 <div id="descrição-geral-do-problema" class="section level2">
 <h2><strong>1. Descrição geral do problema</strong></h2>
@@ -617,7 +617,7 @@ data.frame(sort(table(categoriaAmeaca$CategoriaAmeaca), decreasing = T))</code><
 ## 4                Extinta (EX)    5
 ## 5  Regionalmente Extinta (RE)    5
 ## 6    Extinto na Natureza (EW)    1</code></pre>
-<p>As colunas <strong>Bioma, Principais Ameaças e Estados de Ocorrência</strong> também estao bagunçadas, com varias informaçoes em uma única linha. Vamos começar a separar pela coluna <em>Bioma</em>. Mas primeiro vamos arrumar os dados que estao sem delimitador.</p>
+<p>As colunas <strong>Bioma, Principais Ameaças e Estados de Ocorrência</strong> também estao com varias informaçoes em uma única linha. Realizaremos a quebra em linhas começando pela coluna <em>Bioma</em>. Mas primeiro vamos arrumar os dados que estao sem delimitador.</p>
 <pre class="r"><code>df[df$Bioma == &quot;Caatinga Cerrado&quot;,]$Bioma = &quot;Caatinga;Cerrado&quot; </code></pre>
 <pre class="r"><code>bioma &lt;- df %&gt;% select(Grupao, Grupo, Familia, Especie, NomeComum, Bioma)
 bioma &lt;- bioma %&gt;% separate_rows(Bioma, sep = c(&quot;[&#39;;&#39;|&#39;,&#39;]&quot;))
@@ -633,7 +633,7 @@ data.frame(sort(table(bioma$Bioma), decreasing = T))</code></pre>
 ## 6        Marinho  161
 ## 7       Pantanal   51
 ## 8  Ilha oceânica    6</code></pre>
-<p>Agora o mesmo processo com a coluna <em>Estados</em> e depois <em>Principais Ameaças</em></p>
+<p>O mesmo processo com a coluna <em>Estados</em> e depois <em>Principais Ameaças</em></p>
 <pre class="r"><code>estados &lt;- df %&gt;% select(Grupao, Grupo, Familia, Especie, NomeComum, EstadosOcorrencia)
 estados &lt;- estados %&gt;% separate_rows(EstadosOcorrencia, sep = c(&quot;[&#39;;&#39;|&#39;,&#39;]&quot;))
 estados$EstadosOcorrencia &lt;- str_trim(estados$EstadosOcorrencia)
@@ -754,6 +754,13 @@ principaisAmeacas &lt;- principaisAmeacas %&gt;% separate_rows(PrincipaisAmeacas
 principaisAmeacas$PrincipaisAmeacas &lt;- str_trim(rm_accent(tolower(principaisAmeacas$PrincipaisAmeacas)))
 
 principaisAmeacas$PrincipaisAmeacas &lt;- gsub(&quot;\\:\\s&quot;,&quot;:&quot;, principaisAmeacas$PrincipaisAmeacas)</code></pre>
+<pre class="r"><code># Salvando os datasets em arquivos para construir o dashboard no PowerBI
+write.csv(bioma, &quot;arquivos/biomas.csv&quot;, row.names = FALSE, fileEncoding = &quot;UTF-8&quot;)
+write.csv(categoriaAmeaca, &quot;arquivos/categoria_ameaca.csv&quot;, row.names = FALSE, fileEncoding = &quot;UTF-8&quot;)
+write.csv(estados, &quot;arquivos/estados.csv&quot;, row.names = FALSE, fileEncoding = &quot;UTF-8&quot;)
+write.csv(principaisAmeacas, &quot;arquivos/principais_ameacas.csv&quot;, row.names = FALSE, fileEncoding = &quot;UTF-8&quot;)
+especies &lt;- df %&gt;% select(&quot;Grupao&quot;, &quot;Grupo&quot;, &quot;Familia&quot;, &quot;Especie&quot;, &quot;NomeComum&quot;, &quot;AreasProtegidas&quot;, &quot;PAN&quot;, &quot;OrdenamentoPesqueiro&quot;, &quot;ProtecaoNacional&quot;, &quot;ExclusivaBrasil&quot;) 
+write.csv(especies, &quot;arquivos/especies.csv&quot;, row.names = FALSE, fileEncoding = &quot;UTF-8&quot;)</code></pre>
 </div>
 </div>
 

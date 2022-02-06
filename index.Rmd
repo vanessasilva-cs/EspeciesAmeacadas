@@ -201,7 +201,7 @@ categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/
 data.frame(sort(table(categoriaAmeaca$CategoriaAmeaca), decreasing = T))
 ```
  
-As colunas **Bioma, Principais Ameaças e Estados de Ocorrência** também estao bagunçadas, com varias informaçoes em uma única linha. Vamos começar a separar pela coluna *Bioma*. Mas primeiro vamos arrumar os dados que estao sem delimitador.
+As colunas **Bioma, Principais Ameaças e Estados de Ocorrência** também estao com varias informaçoes em uma única linha. Realizaremos a quebra em linhas começando pela coluna *Bioma*. Mas primeiro vamos arrumar os dados que estao sem delimitador.
 
 ```{r}
 df[df$Bioma == "Caatinga Cerrado",]$Bioma = "Caatinga;Cerrado" 
@@ -214,7 +214,7 @@ bioma <- bioma[!(bioma$Bioma == ""),]
 bioma$Bioma <- str_trim(bioma$Bioma)
 data.frame(sort(table(bioma$Bioma), decreasing = T))
 ```
-Agora o mesmo processo com a coluna *Estados*  e depois *Principais Ameaças*
+O mesmo processo com a coluna *Estados* e depois *Principais Ameaças*
 ```{r}
 estados <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, EstadosOcorrencia)
 estados <- estados %>% separate_rows(EstadosOcorrencia, sep = c("[';'|',']"))
@@ -335,14 +335,14 @@ principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep 
 
 ```
 
-```{r echo=FALSE}
+```{r }
 # Salvando os datasets em arquivos para construir o dashboard no PowerBI
-write.csv(bioma, "arquivos/biomas.csv", row.names = FALSE)
-write.csv(categoriaAmeaca, "arquivos/categoria_ameaca.csv", row.names = FALSE)
-write.csv(estados, "arquivos/estados.csv", row.names = FALSE)
-write.csv(principaisAmeacas, "arquivos/principais_ameacas.csv", row.names = FALSE)
+write.csv(bioma, "arquivos/biomas.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(categoriaAmeaca, "arquivos/categoria_ameaca.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(estados, "arquivos/estados.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(principaisAmeacas, "arquivos/principais_ameacas.csv", row.names = FALSE, fileEncoding = "UTF-8")
 especies <- df %>% select("Grupao", "Grupo", "Familia", "Especie", "NomeComum", "AreasProtegidas", "PAN", "OrdenamentoPesqueiro", "ProtecaoNacional", "ExclusivaBrasil") 
-write.csv(especies, "arquivos/especies.csv", row.names = FALSE)
+write.csv(especies, "arquivos/especies.csv", row.names = FALSE, fileEncoding = "UTF-8")
 ```
 
 
