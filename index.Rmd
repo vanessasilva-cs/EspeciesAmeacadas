@@ -8,20 +8,29 @@ output: html_document
 ## **1. Descrição geral do problema**
 ```{r pressure, echo=FALSE, out.width = '100%'}
 knitr::include_graphics("img/img.png")
-```
 
+```
+O Brasil é um país de **proporções continentais** que ocupa quase metade da América do Sul e inclui várias zonas climáticas. Essa variedade de clima resultou em mudanças ecológicas dramáticas que criaram biomas únicos como, a **Floresta Amazônica**, o **Pantanal**, o **Cerrado**, a **Caatinga**, os campos dos **Pampas**, e a floresta tropical pluvial da **Mata Atlântica**, além da vasta costa oceânica que inclui ecossistemas como recifes de corais, dunas, manguezais, lagoas, estuários e pântanos. Dois desses biomas, o Cerrado e a Mata Atlântica, são áreas de grande riqueza e endemismo e consideradas uma prioridade global de conservação
+
+A biodiversidade fornece os *“serviços ambientais”* para os seres humanos, a partir dessa conservação e funcionamento dessas interações, a sociedade obtém os **suprimentos**, **energia** e outros produtos e serviços que contribuem para o *desenvolvimento econômico* e *social* do planeta. Entretanto, o funcionamento dos biomas, convive com a evolução e as transformações no planeta, que ameaçam o seu funcionamento e a sua existência. Somente após 1967 o problema da perda de biodiversidade despontou dentre os temas ambientais planetários, juntamente com outros temas ambientais.
+
+As **alterações no ambiente** afetam **gravemente** a biodiversidade. Estes danos são causados pela exploração predatória para abertura de novas áreas, degradação do meio ambiente, catástrofes naturais, incêndios florestais, bem como a extração desordenada, a poluição entre uma série de outros fatores que poderão interferir de forma direta ou indireta. Este fato é observado em todos os biomas brasileiros.
+
+A **compreensão** do estado de **conservação** da biodiversidade é o ponto de partida para o planejamento sistemático das **medidas** que devem ser tomadas para **reduzir** o *risco* de **extinção das espécies**, garantir sua sobrevivência e, assim, manter o funcionamento do ecossistema.
 
 
 ## **2. Carregando Dados**
 
 ### **2.1 Importando bibliotecas necessárias**
 
-Começaremos nosso projeto, importanto todas as bilbiotecas necessárias, para a realização da fase de transformação dos dados.
+Começaremos nosso projeto, importanto todas as bilbiotecas necessárias  para o processamento dos dados.
 ```{r warning=FALSE, message=FALSE}
-library(stringr)
-library(tidyr)
-library(dplyr)
-library(knitr)
+library(stringr) # para a manipulação de textos
+library(tidyr) # para organização e manilação da base de dados
+library(dplyr) # para organização e manilação da base de dados
+library(knitr) # para gerar documentos dinamicos em formato HTML
+library(ggplot2) # para a construção de gráficos
+library(forcats) # ara a construção de gráficos
 
 ```
 
@@ -35,34 +44,29 @@ df <- read.csv("arquivos/lista-de-especies-ameacas-2020.csv", header = T, sep = 
 ```
 
 ```{r}
-# Renomeando as colunas para facilitar a manipulação dos dados
-colnames(df) = c('Grupao', 'Grupo','Familia', 'Especie', 'NomeComum', 'CategoriaAmeaca', 'SiglaCategoria','Bioma', 'PrincipaisAmeacas', 'AreasProtegidas', 'PAN', 'OrdenamentoPesqueiro', 'ProtecaoNacional', 'ExclusivaBrasil', 'EstadosOcorrencia')
-```
-
-```{r}
 # Exibindo as primeiras linhas e algumas colunas do Dataset.
 kable(head(df[,c(1:4,8,9,15)]))
 ```
 ## **3. Preparando, lmpeza e transformação dos dados para a construção do dashboard**
 Antes de prosseguirmos, é importante destacar a informação que cada variável representa:
 
-| Variável                               | Tipo      | Descrição                                                                                                              |
-|:---------------------------------------|:----------|:-----------------------------------------------------------------------------------------------------------------------|
-| **Fauna/Flora** |*object*   | É o conjunto de táxons de plantas e/ou animais;                                                                                         |
-| **Grupo**|*object*   | Classificação geral;                                                                                           |
-| **Família** |*object*   | É constituída por um conjunto de gêneros;                                                                                         |
-| **Espécie (Simplificado)** |*object*   | Nome cientíco da espécie sem o autor;                                                                                           |
-| **Nome Comum**|*object*   | Como a espécie é conhecida popularmente;                                                                                         |
-| **Categoria de Ameaça**  |*object*   | Categoria de risco de extinção;                                                                                           |
-| **Sigla Categoria de Ameaça**|*object*   | Abreviação de categoria de ameaça;                                                                                         |
-| **Bioma** |*object*   | Tipo de ecossitema de um espaço geográfico;                                                                                           |
-| **Principais Ameaças**|*object*   | Fatores prejudiciais para as espécies;                                                                                         |
-| **Presença em Áreas Protegidas** |*object*   | Presença ou não em áreas protegidas;                                                                                           |
-| **Plano de Ação Nacional para Conservação**|*object*   | Presença em planos de proteção nacionl;                                                                                         |
-| **Ordenamento Pesqueiro**|*object*   | É o conjunto de normas e ações que permitem administrar a atividade pesqueira;                                                                                           |
-| **Nível de Proteção na Estratégia Nacional**|*float64*  | Categorização na urgência da conservação das espécies (0 a 5, sendo 0 a mais urgente e 5, a menos);                                                                                         |
-| **Espécie exclusiva do Brasil**|*object*   | Espécies que só podem ser encontradas no Brasil;                                                                                           |
-| **Estados de Ocorrência**|*object*   | Estados onde foi identificado a presença da espécie;                                                                                         |
+| Variável                               |  Descrição                                                                                                              |
+|:---------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| **Fauna/Flora** | É o conjunto de táxons de plantas e/ou animais;                                                                                         
+| **Grupo**| Classificação geral;
+| **Família** | É constituída por um conjunto de gêneros;                                                                                         
+| **Espécie (Simplificado)** | Nome cientíco da espécie sem o autor;                                                                                           
+| **Nome Comum**| Como a espécie é conhecida popularmente;                                                                                         
+| **Categoria de Ameaça**  | Categoria de risco de extinção;                                                                                           
+| **Sigla Categoria de Ameaça**| Abreviação de categoria de ameaça;                                                                                         
+| **Bioma** | Tipo de ecossitema de um espaço geográfico;                                                                                           
+| **Principais Ameaças**| Fatores prejudiciais para as espécies;                                                                                         
+| **Presença em Áreas Protegidas** | Presença ou não em áreas protegidas;                                                                                       
+| **Plano de Ação Nacional para Conservação**| Presença em planos de proteção nacionl;                                                                      
+| **Ordenamento Pesqueiro**| É o conjunto de normas e ações que permitem administrar a atividade pesqueira;
+| **Nível de Proteção na Estratégia Nacional**| Categorização na urgência da conservação das espécies (0 a 5, sendo 0 a mais urgente);
+| **Espécie exclusiva do Brasil**| Espécies que só podem ser encontradas no Brasil;
+| **Estados de Ocorrência**| Estados onde foi identificado a presença da espécie;                                                                                         
 
 ### **3.1 Visão geral dos dados**
 ```{r}
@@ -73,6 +77,12 @@ dim(df)
 ```{r}
 glimpse(df)
 ```
+Como podemos observar apenas a coluna de **Nível.de.Proteção.na.Estratégia.Nacional** é do tipo inteiro, mais abaixo vamos alterá-la para *character*
+```{r}
+# Renomeando as colunas para facilitar a manipulação dos dados
+colnames(df) = c('Grupao', 'Grupo','Familia', 'Especie', 'NomeComum', 'CategoriaAmeaca', 'SiglaCategoria','Bioma', 'PrincipaisAmeacas', 'AreasProtegidas', 'PAN', 'OrdenamentoPesqueiro', 'ProtecaoNacional', 'ExclusivaBrasil', 'EstadosOcorrencia')
+```
+
 
 O conjunto de dados possui **15 variáveis**, e **3287 observações**, agora vamos verificar se há algum valor ausente nos dados.
 ```{r}
@@ -84,15 +94,16 @@ kable(sapply(df, function(x) sum(is.na((x)))), col.names = c("NA's"))
 df[df$ProtecaoNacional == " ",1:6]
 ```
  
-Como podemos ver, embora apenas a coluna Proteção Nacional apresente valores em falta, a consulta anterior verificou que não existem valores para toda a linha. Como não há nada relevante, podemos excluí-lo.
+Embora apenas a coluna **Proteção Nacional** apresente valores em falta, a consulta anterior verificou que não existem valores para toda a linha. Como não há nada relevante, podemos excluí-la.
 
 ```{r}
+# Apagando as linhas com valores ausentes
 df = na.omit(df)
 # Varificando o dataset novamente
 dim(df)
 ```
 
-Os dados extraídos do MMA são apenas para espécies ameaçadas, por isso adicionaremos espécies extintas abaixo, de acordo com a Portaria nº 444 de 17 de dezembro de 2014 (Anexo II).
+Os dados extraídos do MMA são apenas para espécies ameaçadas, por isso adicionaremos as espécies extintas manualmente, de acordo com a Portaria nº 444 de 17 de dezembro de 2014 (Anexo II).
 ```{r}
 x <- data.frame(
   Grupao = c("Fauna","Fauna", "Fauna","Fauna","Fauna","Fauna","Fauna","Fauna","Fauna","Fauna"),
@@ -112,12 +123,12 @@ x <- data.frame(
   EstadosOcorrencia = c("PE", "AM;MG;SP", "PE;AL;PB", "PR", "PE;AL","PE;AL","RS","SP","SP;SC","RS")
   )
 
+# Adicionando o novo conjunto de dados ao nosso dataset
 df <- rbind(df,x)
 
 ```
 
-
-Agora vamos ver quantos valores únicos cada coluna tem e se existem outliers.
+Agora vamos ver quantos valores únicos existe em cada coluna.
 ```{r}
 # Contabilizando o número de valores únicos em cada variável do dataset.
 
@@ -136,21 +147,24 @@ NUniques
 
 ```
 
+```{r echo=FALSE, include=FALSE}
 ### **3.2 Verificando e eliminando outliers**
 
-Vamos verificar o valor de cada coluna e comparar com o número de valores únicos na consulta anterior.
-```{r}
+# Vamos verificar o valor de cada coluna e comparar com o número de valores únicos na consulta anterior.
+
 # Coluna Fauna/Flora
 data.frame(table(df$Grupao))
 ```
  
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Coluna Grupo
 data.frame(sort(table(df$Grupo), decreasing = T))
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Coluna Familia e Especie
+
+# Removendo possíveis espaços em branco que possam existir nos dados
 df$Familia <- str_trim(df$Familia)
 df$Especie <- str_trim(df$Especie)
 
@@ -161,38 +175,47 @@ names(n_rows)[1] <- 'n_familia'
 n_rows
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Coluna Categoria de Ameaça
 data.frame(sort(table(df$CategoriaAmeaca), decreasing = T))
 ```
 
-Três categorias devem ser unificadas: **(Criticamente em Perigo (CR)/Possivelmente Extinto (PEX) e Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW))**, iremos fazer isso mais abaixo.
-```{r}
+```{r echo=FALSE, include=FALSE}
+# Três categorias devem ser unificadas: **(Criticamente em Perigo (CR)/Possivelmente Extinto (PEX) e Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW))**, iremos fazer isso mais abaixo.
+
 # Coluna Presença em Áreas Protegidas
 data.frame(sort(table(df$AreasProtegidas), decreasing = T)) 
 ```
-```{r}
+
+```{r echo=FALSE, include=FALSE}
 # Coluna Plano de Ação Nacional para Conservação (PAN)
 data.frame(sort(table(df$PAN),decreasing = T)) 
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Coluna Ordenamento Pesqueiro
 data.frame(table(df$OrdenamentoPesqueiro))
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Coluna Nível de Proteção na Estratégia Nacional
+
+# Primeiramente iremos converter o tipo dos dados de inteiro para tipo texto
+df$ProtecaoNacional <- as.character(df$ProtecaoNacional)
+class(df$ProtecaoNacional)
+
 data.frame(sort(table(df$ProtecaoNacional), decreasing = T))
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Coluna Espécie exclusiva do Brasil
 data.frame(sort(table(df$ExclusivaBrasil),decreasing = T)) 
 ```
-Vamos começar unindo os dados de categoria de ameaça.
-```{r}
 
+```{r echo=FALSE, include=FALSE}
+# Vamos começar unindo os dados de categoria de ameaça.
+
+# Separação dos dados em outra variável
 categoriaAmeaca <- select(df, Grupao, Grupo, Familia, Especie, NomeComum, CategoriaAmeaca)
 
 categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW)" | categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto (PEX)",]$CategoriaAmeaca = "Criticamente em Perigo (CR)"
@@ -200,37 +223,46 @@ categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/
 # Visualizando os dados novamente
 data.frame(sort(table(categoriaAmeaca$CategoriaAmeaca), decreasing = T))
 ```
- 
-As colunas **Bioma, Principais Ameaças e Estados de Ocorrência** também estao com varias informaçoes em uma única linha. Realizaremos a quebra em linhas começando pela coluna *Bioma*. Mas primeiro vamos arrumar os dados que estao sem delimitador.
 
-```{r}
+```{r echo=FALSE, include=FALSE}
+# As colunas **Bioma, Principais Ameaças e Estados de Ocorrência** também estao com varias informaçoes em uma única linha. Realizaremos a quebra em linhas começando pela coluna *Bioma*. Mas primeiro vamos arrumar os dados que estao sem delimitador.
+
 df[df$Bioma == "Caatinga Cerrado",]$Bioma = "Caatinga;Cerrado" 
-```
 
-```{r}
+# Separação dos dados em outra variável
 bioma <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, Bioma)
+
+# Quebra dos dados em linhas e remoção de linhas em branco que tenham ficado no dataset
 bioma <- bioma %>% separate_rows(Bioma, sep = c("[';'|',']"))
 bioma <- bioma[!(bioma$Bioma == ""),]
+# Limpeza de espaços no inicio e fim 
 bioma$Bioma <- str_trim(bioma$Bioma)
+# Visualizaçao dos dados
 data.frame(sort(table(bioma$Bioma), decreasing = T))
 ```
-O mesmo processo com a coluna *Estados* e depois *Principais Ameaças*
-```{r}
+
+```{r echo=FALSE, include=FALSE}
+# O mesmo processo com a coluna *Estados* e depois *Principais Ameaças*```
+
 estados <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, EstadosOcorrencia)
 estados <- estados %>% separate_rows(EstadosOcorrencia, sep = c("[';'|',']"))
 estados$EstadosOcorrencia <- str_trim(estados$EstadosOcorrencia)
 estados <- estados[!(estados$EstadosOcorrencia == ""),]
 data.frame(sort(table(estados$EstadosOcorrencia), decreasing = T))
 ```
-Ainda verificamos 5 linhas com dois estados, porém sem separador, entao iremos alterar para realizar a separaçao novamente.
-```{r}
+
+```{r echo=FALSE, include=FALSE}
+#Ainda verificamos 5 linhas com dois estados, porém sem separador, entao iremos alterar para realizar a separaçao novamente.
+
 estados[nchar(estados$EstadosOcorrencia)==5,]$EstadosOcorrencia <- str_replace(estados[nchar(estados$EstadosOcorrencia)==5,]$EstadosOcorrencia, ' ',';')
 estados <- estados %>% separate_rows(EstadosOcorrencia, sep = c(sep = c("[';'|',']")))
 estados[estados$EstadosOcorrencia == "Pl",]$EstadosOcorrencia = "PI" 
 data.frame(sort(table(estados$EstadosOcorrencia), decreasing = T))
 ```
-Primeiro iremos padronizar a coluna *Principais Ameaças* remover os acentos para posteriormente fazer a separaçao em linha.
-```{r}
+
+```{r echo=FALSE, include=FALSE}
+# Primeiro iremos padronizar a coluna *Principais Ameaças* remover os acentos para posteriormente fazer a separaçao em linha.
+
 rm_accent <- function(str,pattern="all") {
 
   # Exemplo: pattern = c("´", "^") retirará os acentos agudos e circunflexos apenas.
@@ -269,20 +301,17 @@ rm_accent <- function(str,pattern="all") {
 }
 ```
 
-
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Aplicando a funçao e a separaçao aos dados da coluna Principais Ameaças
+
 principaisAmeacas <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, PrincipaisAmeacas)
-
 principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep = c("[';'|',']"))
-
 principaisAmeacas$PrincipaisAmeacas <- str_trim(rm_accent(tolower(principaisAmeacas$PrincipaisAmeacas)))
-
 principaisAmeacas$PrincipaisAmeacas <- gsub("\\:\\s",":", principaisAmeacas$PrincipaisAmeacas)
 
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
 # Dados com duas informações sem separador, além disso há muitas categorias que podem ser unidas em uma única 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "assentamentos humanos:cidades" | principaisAmeacas$PrincipaisAmeacas == "assentamento humano:cidades",]$PrincipaisAmeacas = "expansão urbana"
 
@@ -291,7 +320,6 @@ principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "ameaca desconhecida" |
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "mudanca na dinamica das especies nativas" | principaisAmeacas$PrincipaisAmeacas == "mudanças na dinamica das especies nativas" | principaisAmeacas$PrincipaisAmeacas == "mudança na dinamica das especies nativas",]$PrincipaisAmeacas = "mudanças na dinamica das especies nativas"
 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "agropecuaria aquacultura",]$PrincipaisAmeacas = "aquicultura"
-
 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extraçao direta" | principaisAmeacas$PrincipaisAmeacas == "extraçao direta/coleta",]$PrincipaisAmeacas = "coleta"
 
@@ -330,12 +358,10 @@ principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "disturbio humano",]$Pr
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "telecomunicaçao",]$PrincipaisAmeacas = 'desenvolvimento e infraestrutura'
 
 principaisAmeacas <- principaisAmeacas[!(principaisAmeacas$PrincipaisAmeacas == ""),]
-
 principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep = c(";"))
-
 ```
 
-```{r }
+```{r echo=FALSE, include=FALSE}
 # Salvando os datasets em arquivos para construir o dashboard no PowerBI
 write.csv(bioma, "arquivos/biomas.csv", row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(categoriaAmeaca, "arquivos/categoria_ameaca.csv", row.names = FALSE, fileEncoding = "UTF-8")
