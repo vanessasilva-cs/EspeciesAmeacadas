@@ -47,7 +47,7 @@ df <- read.csv("arquivos/lista-de-especies-ameacas-2020.csv", header = T, sep = 
 # Exibindo as primeiras linhas e algumas colunas do Dataset.
 kable(head(df[,c(1:4,8,9,15)]))
 ```
-## **3. Preparando, lmpeza e transformação dos dados para a construção do dashboard**
+## **3. Preparação, limpeza e transformação dos dados para a construção do dashboard**
 Antes de prosseguirmos, é importante destacar a informação que cada variável representa:
 
 | Variável                               |  Descrição                                                                                                              |
