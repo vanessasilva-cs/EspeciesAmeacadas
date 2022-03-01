@@ -181,7 +181,7 @@ data.frame(sort(table(df$CategoriaAmeaca), decreasing = T))
 ```
 
 ```{r echo=FALSE, include=FALSE}
-# Três categorias devem ser unificadas: **(Criticamente em Perigo (CR)/Possivelmente Extinto (PEX) e Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW))**, iremos fazer isso mais abaixo.
+# Duas categorias devem ser separadas: **(Criticamente em Perigo (CR)/Possivelmente Extinto (PEX) e Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW))**, iremos fazer isso mais abaixo.
 
 # Coluna Presença em Áreas Protegidas
 data.frame(sort(table(df$AreasProtegidas), decreasing = T)) 
@@ -213,12 +213,14 @@ data.frame(sort(table(df$ExclusivaBrasil),decreasing = T))
 ```
 
 ```{r echo=FALSE, include=FALSE}
-# Vamos começar unindo os dados de categoria de ameaça.
+# Vamos começar com os dados de categoria de ameaça.
 
 # Separação dos dados em outra variável
 categoriaAmeaca <- select(df, Grupao, Grupo, Familia, Especie, NomeComum, CategoriaAmeaca)
 
-categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW)" | categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto (PEX)",]$CategoriaAmeaca = "Criticamente em Perigo (CR)"
+categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW)",]$CategoriaAmeaca = "Possivelmente Extinto na Natureza (PEW)"
+
+categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto (PEX)",]$CategoriaAmeaca = "Possivelmente Extinto (PEX)"
 
 # Visualizando os dados novamente
 data.frame(sort(table(categoriaAmeaca$CategoriaAmeaca), decreasing = T))
@@ -329,13 +331,13 @@ principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extracao direta:caça/
 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "extraçao de madeira" | principaisAmeacas$PrincipaisAmeacas == "extraçao madereira",]$PrincipaisAmeacas = 'extraçao de madeira'
 
-principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaolinhas de energia",]$PrincipaisAmeacas = "Turismo desordenado;Produção de energia"
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaolinhas de energia",]$PrincipaisAmeacas = "turismo desordenado;Produção de energia"
 
-principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoqueimadas",]$PrincipaisAmeacas = "Turismo desordenado;queimadas"
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoqueimadas",]$PrincipaisAmeacas = "turismo desordenado;queimadas"
 
-principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoagropecuaria",]$PrincipaisAmeacas = "Turismo desordenado;agropecuaria"
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoagropecuaria",]$PrincipaisAmeacas = "turismo desordenado;agropecuaria"
 
-principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoassentamentos humanos:cidades",]$PrincipaisAmeacas = "Turismo desordenado;expansão urbana"
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçaoassentamentos humanos:cidades",]$PrincipaisAmeacas = "turismo desordenado;expansão urbana"
 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "mineracao",]$PrincipaisAmeacas = "mineraçao"
  
@@ -351,7 +353,7 @@ principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "poluiçao assoreamento
 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "outras atividades economicas:turismo",]$PrincipaisAmeacas = 'Turismo desordenado'
 
-principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçao",]$PrincipaisAmeacas = 'Turismo desordenado'
+principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "turismo/recreaçao",]$PrincipaisAmeacas = 'turismo desordenado'
 
 principaisAmeacas[principaisAmeacas$PrincipaisAmeacas == "disturbio humano",]$PrincipaisAmeacas = 'perda de habitat/degradaçao (induzida por humanos)'
 
