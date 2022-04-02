@@ -24,13 +24,14 @@ A **compreensão** do estado de **conservação** da biodiversidade é o ponto d
 ### **2.1 Importando bibliotecas necessárias**
 
 Começaremos nosso projeto, importanto todas as bilbiotecas necessárias  para o processamento dos dados.
-```{r warning=FALSE, message=FALSE}
+```{r warning=FALSE, message=FALSE, echo=FALSE, include=FALSE}
 library(stringr) # para a manipulação de textos
 library(tidyr) # para organização e manilação da base de dados
 library(dplyr) # para organização e manilação da base de dados
 library(knitr) # para gerar documentos dinamicos em formato HTML
 library(ggplot2) # para a construção de gráficos
 library(forcats) # ara a construção de gráficos
+library(readr)
 
 ```
 
@@ -40,7 +41,9 @@ Fonte: [Portal de Dados Abertos MMA](http://dados.mma.gov.br/dataset/41a79b71-44
 
 ```{r}
 # Carregando conjunto de dados.
-df <- read.csv("arquivos/lista-de-especies-ameacas-2020.csv", header = T, sep = ";", fileEncoding = "utf8")
+df <- read_delim("arquivos/lista-de-especies-ameacas-2020.csv")
+
+#, header = T, sep = ";", fileEncoding = "utf-8"
 ```
 
 ```{r}
@@ -69,48 +72,55 @@ Antes de prosseguirmos, é importante destacar a informação que cada variável
 | **Estados de Ocorrência**| Estados onde foi identificado a presença da espécie;                                                                                         
 
 ### **3.1 Visão geral dos dados**
-```{r}
+```{r echo=FALSE, include=FALSE}
 # Verificando as dimensões do dataset.
 dim(df)
 ```
 
-```{r}
+```{r echo=FALSE}
 glimpse(df)
 ```
-Como podemos observar apenas a coluna de **Nível.de.Proteção.na.Estratégia.Nacional** é do tipo inteiro, mais abaixo vamos alterá-la para *character*
+
+O conjunto de dados possui **15 variáveis** e **3287 observações**
 ```{r}
 # Renomeando as colunas para facilitar a manipulação dos dados
 colnames(df) = c('Grupao', 'Grupo','Familia', 'Especie', 'NomeComum', 'CategoriaAmeaca', 'SiglaCategoria','Bioma', 'PrincipaisAmeacas', 'AreasProtegidas', 'PAN', 'OrdenamentoPesqueiro', 'ProtecaoNacional', 'ExclusivaBrasil', 'EstadosOcorrencia')
 ```
 
 
-O conjunto de dados possui **15 variáveis**, e **3287 observações**, agora vamos verificar se há algum valor ausente nos dados.
-```{r}
+```{r echo=FALSE, include=FALSE}
+# agora vamos verificar se há algum valor ausente nos dados para posterior remoção.
+
 # Verificando o número de NAs existentes dentro do dataset.
 kable(sapply(df, function(x) sum(is.na((x)))), col.names = c("NA's")) 
 ```
-**Há uma coluna com valor nulo** dentro do dataset que precisa ser removida, vamos verificar a linha para confirmar se é possível remove-la completamente.
-```{r}
+
+```{r echo=FALSE, include=FALSE}
+# **Há uma coluna com valor nulo** dentro do dataset que precisa ser removida, vamos verificar a linha para confirmar se é possível remove-la completamente.
 df[df$ProtecaoNacional == " ",1:6]
 ```
  
-Embora apenas a coluna **Proteção Nacional** apresente valores em falta, a consulta anterior verificou que não existem valores para toda a linha. Como não há nada relevante, podemos excluí-la.
 
-```{r}
+
+```{r echo=FALSE, include=FALSE}
+# Embora apenas a coluna **Proteção Nacional** apresente valores em falta, a consulta anterior verificou que não existem valores para toda a linha. Como não há nada relevante, podemos excluí-la.
 # Apagando as linhas com valores ausentes
 df = na.omit(df)
 # Varificando o dataset novamente
 dim(df)
 ```
 
-Os dados extraídos do MMA são apenas para espécies ameaçadas, por isso adicionaremos as espécies extintas manualmente, de acordo com a Portaria nº 444 de 17 de dezembro de 2014 (Anexo II).
-```{r}
-x <- data.frame(
+
+```{r echo=FALSE, include=FALSE}
+
+# Os dados extraídos do MMA são apenas para espécies ameaçadas, por isso as espécies extintas foram adicionadas manualmente, de acordo com a Portaria nº 444 de 17 de dezembro de 2014 (Anexo II).
+
+espExt <- data.frame(
   Grupao = c("Fauna","Fauna", "Fauna","Fauna","Fauna","Fauna","Fauna","Fauna","Fauna","Fauna"),
   Grupo = c("Mamíferos", "Aves", "Aves","Aves","Aves","Aves","Aves","Anfíbios","Peixes Marinhos", "Peixes Marinhos"),
   Familia = c("Cricetidae","Scolopacidae","Strigidae","Psittacidae", "Furnariidae","Furnariidae", "Icteridae","Phyllomedusidae", "Carcharhinidae", "Scyliorhinidae"),
   Especie = c("Noronhomys vespuccii","Numenius borealis", "Glaucidium mooreorum","Anodorhynchus glaucus", "Philydor novaesi", "Cichlocolaptes mazarbarnetti", "Sturnella defilippii","Phrynomedusa fimbriata", "Carcharhinus isodon","Schroederichthys bivius"),
-  NomeComum = c("rato-de-noronha","maçarico-esquimó", "caburé-de-pernambuco","arara-azul-pequena", "limpa-folha-do-nordeste", "gritador-do-nordeste", "peito-vermelho-grande"," perereca-verde-de-fímbria","tubarão-dente-de-agulha","tubarão-lagarto"),
+  NomeComum = c("rato-de-noronha","maçarico-esquimó", "caburé-de-pernambuco","arara-azul-pequena", "limpa-folha-do-nordeste", "gritador-do-nordeste", "peito-vermelho-grande","perereca-verde-de-fímbria","tubarão-dente-de-agulha","tubarão-lagarto"),
   CategoriaAmeaca = c("Extinta (EX)","Regionalmente Extinta (RE)","Extinta (EX)","Regionalmente Extinta (RE)", "Extinta (EX)", "Extinta (EX)", "Regionalmente Extinta (RE)","Extinta (EX)","Regionalmente Extinta (RE)","Regionalmente Extinta (RE)"),
   SiglaCategoria = c("EX","RE","EX","RE", "EX","EX", "RE","EX","RE","RE"),
   Bioma = c("Mata Atlântica;Ilha oceânica","Pampa;Mata Atlântica;Pantanal","Mata Atlântica","Mata Atlântica","Mata Atlântica","Mata Atlântica", "Pampa","Mata Atlântica","Marinho","Marinho"),
@@ -124,12 +134,18 @@ x <- data.frame(
   )
 
 # Adicionando o novo conjunto de dados ao nosso dataset
-df <- rbind(df,x)
+df <- rbind(df,espExt)
+
+espExt <- espExt %>% separate_rows(Bioma, sep = c("[';']"))
+espExt <- espExt %>% separate_rows(PrincipaisAmeacas, sep = c("[';']"))
+espExt <- espExt %>% separate_rows(EstadosOcorrencia, sep = c("[';']"))
 
 ```
 
-Agora vamos ver quantos valores únicos existe em cada coluna.
-```{r}
+Verificando valores únicos existente em cada coluna.
+```{r echo=FALSE}
+
+
 # Contabilizando o número de valores únicos em cada variável do dataset.
 
 NUniques = sapply(df, function(x) length(unique((x)))) 
@@ -212,11 +228,16 @@ data.frame(sort(table(df$ProtecaoNacional), decreasing = T))
 data.frame(sort(table(df$ExclusivaBrasil),decreasing = T)) 
 ```
 
+```{r}
+df$Id <- paste(toupper(str_sub(df$Especie,0,2)),toupper(str_sub(df$Especie,-2)),toupper(str_sub(df$Familia,0,2)),sep = "")
+```
+
+
 ```{r echo=FALSE, include=FALSE}
 # Vamos começar com os dados de categoria de ameaça.
 
 # Separação dos dados em outra variável
-categoriaAmeaca <- select(df, Grupao, Grupo, Familia, Especie, NomeComum, CategoriaAmeaca)
+categoriaAmeaca <- select(df, Id, Especie, CategoriaAmeaca)
 
 categoriaAmeaca[categoriaAmeaca$CategoriaAmeaca == "Criticamente em Perigo (CR)/Possivelmente Extinto na Natureza (PEW)",]$CategoriaAmeaca = "Possivelmente Extinto na Natureza (PEW)"
 
@@ -232,7 +253,7 @@ data.frame(sort(table(categoriaAmeaca$CategoriaAmeaca), decreasing = T))
 df[df$Bioma == "Caatinga Cerrado",]$Bioma = "Caatinga;Cerrado" 
 
 # Separação dos dados em outra variável
-bioma <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, Bioma)
+bioma <- df %>% select(Id, Especie, Bioma)
 
 # Quebra dos dados em linhas e remoção de linhas em branco que tenham ficado no dataset
 bioma <- bioma %>% separate_rows(Bioma, sep = c("[';'|',']"))
@@ -246,7 +267,7 @@ data.frame(sort(table(bioma$Bioma), decreasing = T))
 ```{r echo=FALSE, include=FALSE}
 # O mesmo processo com a coluna *Estados* e depois *Principais Ameaças*```
 
-estados <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, EstadosOcorrencia)
+estados <- df %>% select(Id, Especie, EstadosOcorrencia)
 estados <- estados %>% separate_rows(EstadosOcorrencia, sep = c("[';'|',']"))
 estados$EstadosOcorrencia <- str_trim(estados$EstadosOcorrencia)
 estados <- estados[!(estados$EstadosOcorrencia == ""),]
@@ -306,7 +327,7 @@ rm_accent <- function(str,pattern="all") {
 ```{r echo=FALSE, include=FALSE}
 # Aplicando a funçao e a separaçao aos dados da coluna Principais Ameaças
 
-principaisAmeacas <- df %>% select(Grupao, Grupo, Familia, Especie, NomeComum, PrincipaisAmeacas)
+principaisAmeacas <- df %>% select(Id, Especie, PrincipaisAmeacas)
 principaisAmeacas <- principaisAmeacas %>% separate_rows(PrincipaisAmeacas, sep = c("[';'|',']"))
 principaisAmeacas$PrincipaisAmeacas <- str_trim(rm_accent(tolower(principaisAmeacas$PrincipaisAmeacas)))
 principaisAmeacas$PrincipaisAmeacas <- gsub("\\:\\s",":", principaisAmeacas$PrincipaisAmeacas)
@@ -369,20 +390,10 @@ write.csv(bioma, "arquivos/biomas.csv", row.names = FALSE, fileEncoding = "UTF-8
 write.csv(categoriaAmeaca, "arquivos/categoria_ameaca.csv", row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(estados, "arquivos/estados.csv", row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(principaisAmeacas, "arquivos/principais_ameacas.csv", row.names = FALSE, fileEncoding = "UTF-8")
-especies <- df %>% select("Grupao", "Grupo", "Familia", "Especie", "NomeComum", "AreasProtegidas", "PAN", "OrdenamentoPesqueiro", "ProtecaoNacional", "ExclusivaBrasil") 
+especies <- df %>% select("Id", "Grupao", "Grupo", "Familia", "Especie", "NomeComum", "AreasProtegidas", "PAN", "OrdenamentoPesqueiro", "ProtecaoNacional", "ExclusivaBrasil") 
 write.csv(especies, "arquivos/especies.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(espExt, "arquivos/espExt.csv", row.names = FALSE, fileEncoding = "UTF-8")
+
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Por fim, após todos os processamentos e depois de salvar os dados, o dashboard foi construído utilizando o *software Tableau* e publicado no *Tableau Public*. Confira abaixo o relatório.  

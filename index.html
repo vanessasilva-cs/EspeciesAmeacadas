@@ -183,18 +183,21 @@ pre code {
 <div id="importando-bibliotecas-necessárias" class="section level3">
 <h3><strong>2.1 Importando bibliotecas necessárias</strong></h3>
 <p>Começaremos nosso projeto, importanto todas as bilbiotecas necessárias para o processamento dos dados.</p>
-<pre class="r"><code>library(stringr) # para a manipulação de textos
-library(tidyr) # para organização e manilação da base de dados
-library(dplyr) # para organização e manilação da base de dados
-library(knitr) # para gerar documentos dinamicos em formato HTML
-library(ggplot2) # para a construção de gráficos
-library(forcats) # ara a construção de gráficos</code></pre>
 </div>
 <div id="carregando-dados-1" class="section level3">
 <h3><strong>2.2 Carregando Dados</strong></h3>
 <p>Fonte: <a href="http://dados.mma.gov.br/dataset/41a79b71-445f-4a6a-8c70-d46af991292a/resource/1f13b062-f3f6-4198-a4c5-3581548bebec/download/lista-de-especies-ameacas-2020.csv">Portal de Dados Abertos MMA</a></p>
 <pre class="r"><code># Carregando conjunto de dados.
-df &lt;- read.csv(&quot;arquivos/lista-de-especies-ameacas-2020.csv&quot;, header = T, sep = &quot;;&quot;, fileEncoding = &quot;utf8&quot;)</code></pre>
+df &lt;- read_delim(&quot;arquivos/lista-de-especies-ameacas-2020.csv&quot;)</code></pre>
+<pre><code>## Rows: 3287 Columns: 15</code></pre>
+<pre><code>## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;;&quot;
+## chr (14): Fauna/Flora, Grupo, Família, Espécie (Simplificado), Nome Comum, C...
+## dbl  (1): Nível de Proteção na Estratégia Nacional</code></pre>
+<pre><code>## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>#, header = T, sep = &quot;;&quot;, fileEncoding = &quot;utf-8&quot;</code></pre>
 <pre class="r"><code># Exibindo as primeiras linhas e algumas colunas do Dataset.
 kable(head(df[,c(1:4,8,9,15)]))</code></pre>
 <table>
@@ -209,13 +212,13 @@ kable(head(df[,c(1:4,8,9,15)]))</code></pre>
 </colgroup>
 <thead>
 <tr class="header">
-<th align="left">Fauna.Flora</th>
+<th align="left">Fauna/Flora</th>
 <th align="left">Grupo</th>
 <th align="left">Família</th>
-<th align="left">Espécie..Simplificado.</th>
+<th align="left">Espécie (Simplificado)</th>
 <th align="left">Bioma</th>
-<th align="left">Principais.Ameaças</th>
-<th align="left">Estados.de.Ocorrência</th>
+<th align="left">Principais Ameaças</th>
+<th align="left">Estados de Ocorrência</th>
 </tr>
 </thead>
 <tbody>
@@ -356,149 +359,27 @@ kable(head(df[,c(1:4,8,9,15)]))</code></pre>
 </table>
 <div id="visão-geral-dos-dados" class="section level3">
 <h3><strong>3.1 Visão geral dos dados</strong></h3>
-<pre class="r"><code># Verificando as dimensões do dataset.
-dim(df)</code></pre>
-<pre><code>## [1] 3287   15</code></pre>
-<pre class="r"><code>glimpse(df)</code></pre>
 <pre><code>## Rows: 3,287
 ## Columns: 15
-## $ Fauna.Flora                                   &lt;chr&gt; &quot;Flora&quot;, &quot;Fauna&quot;, &quot;Flora~
-## $ Grupo                                         &lt;chr&gt; &quot;Angiospermas&quot;, &quot;Aves&quot;, ~
-## $ Família                                       &lt;chr&gt; &quot;Salicaceae&quot;, &quot;Cracidae&quot;~
-## $ Espécie..Simplificado.                        &lt;chr&gt; &quot;Abatia angeliana&quot;, &quot;Abu~
-## $ Nome.Comum                                    &lt;chr&gt; &quot;-&quot;, &quot;Jacutinga&quot;, &quot;-&quot;, &quot;~
-## $ Categoria.de.Ameaça                           &lt;chr&gt; &quot;Vulnerável (VU)&quot;, &quot;Em P~
-## $ Sigla.Categoria.de.Ameaça                     &lt;chr&gt; &quot;VU&quot;, &quot;EN&quot;, &quot;CR&quot;, &quot;CR&quot;, ~
-## $ Bioma                                         &lt;chr&gt; &quot;Mata Atlântica&quot;, &quot;Cerra~
-## $ Principais.Ameaças                            &lt;chr&gt; &quot;Perda de Habitat/Degrad~
-## $ Presença.em.Áreas.Protegidas                  &lt;chr&gt; &quot;Sim&quot;, &quot;Sim&quot;, &quot;Sim&quot;, &quot;Si~
-## $ Plano.de.Ação.Nacional.para.Conservação..PAN. &lt;chr&gt; &quot;Sim&quot;, &quot;Não&quot;, &quot;Sim&quot;, &quot;Nã~
-## $ Ordenamento.Pesqueiro                         &lt;chr&gt; &quot;Não&quot;, &quot;Não&quot;, &quot;Não&quot;, &quot;Nã~
-## $ Nível.de.Proteção.na.Estratégia.Nacional      &lt;int&gt; 2, 4, 2, 2, 2, 3, 2, 2, ~
-## $ Espécie.exclusiva.do.Brasil                   &lt;chr&gt; &quot;Sim&quot;, &quot;Não&quot;, &quot;Sim&quot;, &quot;Si~
-## $ Estados.de.Ocorrência                         &lt;chr&gt; &quot;PR&quot;, &quot;BA; ES; MG; PR; R~</code></pre>
-<p>Como podemos observar apenas a coluna de <strong>Nível.de.Proteção.na.Estratégia.Nacional</strong> é do tipo inteiro, mais abaixo vamos alterá-la para <em>character</em></p>
+## $ `Fauna/Flora`                                   &lt;chr&gt; &quot;Flora&quot;, &quot;Fauna&quot;, &quot;Flo~
+## $ Grupo                                           &lt;chr&gt; &quot;Angiospermas&quot;, &quot;Aves&quot;~
+## $ Família                                         &lt;chr&gt; &quot;Salicaceae&quot;, &quot;Cracida~
+## $ `Espécie (Simplificado)`                        &lt;chr&gt; &quot;Abatia angeliana&quot;, &quot;A~
+## $ `Nome Comum`                                    &lt;chr&gt; &quot;-&quot;, &quot;Jacutinga&quot;, &quot;-&quot;,~
+## $ `Categoria de Ameaça`                           &lt;chr&gt; &quot;Vulnerável (VU)&quot;, &quot;Em~
+## $ `Sigla Categoria de Ameaça`                     &lt;chr&gt; &quot;VU&quot;, &quot;EN&quot;, &quot;CR&quot;, &quot;CR&quot;~
+## $ Bioma                                           &lt;chr&gt; &quot;Mata Atlântica&quot;, &quot;Cer~
+## $ `Principais Ameaças`                            &lt;chr&gt; &quot;Perda de Habitat/Degr~
+## $ `Presença em Áreas Protegidas`                  &lt;chr&gt; &quot;Sim&quot;, &quot;Sim&quot;, &quot;Sim&quot;, &quot;~
+## $ `Plano de Ação Nacional para Conservação (PAN)` &lt;chr&gt; &quot;Sim&quot;, &quot;Não&quot;, &quot;Sim&quot;, &quot;~
+## $ `Ordenamento Pesqueiro `                        &lt;chr&gt; &quot;Não&quot;, &quot;Não&quot;, &quot;Não&quot;, &quot;~
+## $ `Nível de Proteção na Estratégia Nacional`      &lt;dbl&gt; 2, 4, 2, 2, 2, 3, 2, 2~
+## $ `Espécie exclusiva do Brasil`                   &lt;chr&gt; &quot;Sim&quot;, &quot;Não&quot;, &quot;Sim&quot;, &quot;~
+## $ `Estados de Ocorrência`                         &lt;chr&gt; &quot;PR&quot;, &quot;BA; ES; MG; PR;~</code></pre>
+<p>O conjunto de dados possui <strong>15 variáveis</strong> e <strong>3287 observações</strong></p>
 <pre class="r"><code># Renomeando as colunas para facilitar a manipulação dos dados
 colnames(df) = c(&#39;Grupao&#39;, &#39;Grupo&#39;,&#39;Familia&#39;, &#39;Especie&#39;, &#39;NomeComum&#39;, &#39;CategoriaAmeaca&#39;, &#39;SiglaCategoria&#39;,&#39;Bioma&#39;, &#39;PrincipaisAmeacas&#39;, &#39;AreasProtegidas&#39;, &#39;PAN&#39;, &#39;OrdenamentoPesqueiro&#39;, &#39;ProtecaoNacional&#39;, &#39;ExclusivaBrasil&#39;, &#39;EstadosOcorrencia&#39;)</code></pre>
-<p>O conjunto de dados possui <strong>15 variáveis</strong>, e <strong>3287 observações</strong>, agora vamos verificar se há algum valor ausente nos dados.</p>
-<pre class="r"><code># Verificando o número de NAs existentes dentro do dataset.
-kable(sapply(df, function(x) sum(is.na((x)))), col.names = c(&quot;NA&#39;s&quot;)) </code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left"></th>
-<th align="right">NA’s</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Grupao</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">Grupo</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">Familia</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">Especie</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">NomeComum</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">CategoriaAmeaca</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">SiglaCategoria</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">Bioma</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">PrincipaisAmeacas</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">AreasProtegidas</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">PAN</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">OrdenamentoPesqueiro</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">ProtecaoNacional</td>
-<td align="right">1</td>
-</tr>
-<tr class="even">
-<td align="left">ExclusivaBrasil</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">EstadosOcorrencia</td>
-<td align="right">0</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Há uma coluna com valor nulo</strong> dentro do dataset que precisa ser removida, vamos verificar a linha para confirmar se é possível remove-la completamente.</p>
-<pre class="r"><code>df[df$ProtecaoNacional == &quot; &quot;,1:6]</code></pre>
-<pre><code>##    Grupao Grupo Familia Especie NomeComum CategoriaAmeaca
-## NA   &lt;NA&gt;  &lt;NA&gt;    &lt;NA&gt;    &lt;NA&gt;      &lt;NA&gt;            &lt;NA&gt;</code></pre>
-<p>Embora apenas a coluna <strong>Proteção Nacional</strong> apresente valores em falta, a consulta anterior verificou que não existem valores para toda a linha. Como não há nada relevante, podemos excluí-la.</p>
-<pre class="r"><code># Apagando as linhas com valores ausentes
-df = na.omit(df)
-# Varificando o dataset novamente
-dim(df)</code></pre>
-<pre><code>## [1] 3286   15</code></pre>
-<p>Os dados extraídos do MMA são apenas para espécies ameaçadas, por isso adicionaremos as espécies extintas manualmente, de acordo com a Portaria nº 444 de 17 de dezembro de 2014 (Anexo II).</p>
-<pre class="r"><code>x &lt;- data.frame(
-  Grupao = c(&quot;Fauna&quot;,&quot;Fauna&quot;, &quot;Fauna&quot;,&quot;Fauna&quot;,&quot;Fauna&quot;,&quot;Fauna&quot;,&quot;Fauna&quot;,&quot;Fauna&quot;,&quot;Fauna&quot;,&quot;Fauna&quot;),
-  Grupo = c(&quot;Mamíferos&quot;, &quot;Aves&quot;, &quot;Aves&quot;,&quot;Aves&quot;,&quot;Aves&quot;,&quot;Aves&quot;,&quot;Aves&quot;,&quot;Anfíbios&quot;,&quot;Peixes Marinhos&quot;, &quot;Peixes Marinhos&quot;),
-  Familia = c(&quot;Cricetidae&quot;,&quot;Scolopacidae&quot;,&quot;Strigidae&quot;,&quot;Psittacidae&quot;, &quot;Furnariidae&quot;,&quot;Furnariidae&quot;, &quot;Icteridae&quot;,&quot;Phyllomedusidae&quot;, &quot;Carcharhinidae&quot;, &quot;Scyliorhinidae&quot;),
-  Especie = c(&quot;Noronhomys vespuccii&quot;,&quot;Numenius borealis&quot;, &quot;Glaucidium mooreorum&quot;,&quot;Anodorhynchus glaucus&quot;, &quot;Philydor novaesi&quot;, &quot;Cichlocolaptes mazarbarnetti&quot;, &quot;Sturnella defilippii&quot;,&quot;Phrynomedusa fimbriata&quot;, &quot;Carcharhinus isodon&quot;,&quot;Schroederichthys bivius&quot;),
-  NomeComum = c(&quot;rato-de-noronha&quot;,&quot;maçarico-esquimó&quot;, &quot;caburé-de-pernambuco&quot;,&quot;arara-azul-pequena&quot;, &quot;limpa-folha-do-nordeste&quot;, &quot;gritador-do-nordeste&quot;, &quot;peito-vermelho-grande&quot;,&quot; perereca-verde-de-fímbria&quot;,&quot;tubarão-dente-de-agulha&quot;,&quot;tubarão-lagarto&quot;),
-  CategoriaAmeaca = c(&quot;Extinta (EX)&quot;,&quot;Regionalmente Extinta (RE)&quot;,&quot;Extinta (EX)&quot;,&quot;Regionalmente Extinta (RE)&quot;, &quot;Extinta (EX)&quot;, &quot;Extinta (EX)&quot;, &quot;Regionalmente Extinta (RE)&quot;,&quot;Extinta (EX)&quot;,&quot;Regionalmente Extinta (RE)&quot;,&quot;Regionalmente Extinta (RE)&quot;),
-  SiglaCategoria = c(&quot;EX&quot;,&quot;RE&quot;,&quot;EX&quot;,&quot;RE&quot;, &quot;EX&quot;,&quot;EX&quot;, &quot;RE&quot;,&quot;EX&quot;,&quot;RE&quot;,&quot;RE&quot;),
-  Bioma = c(&quot;Mata Atlântica;Ilha oceânica&quot;,&quot;Pampa;Mata Atlântica;Pantanal&quot;,&quot;Mata Atlântica&quot;,&quot;Mata Atlântica&quot;,&quot;Mata Atlântica&quot;,&quot;Mata Atlântica&quot;, &quot;Pampa&quot;,&quot;Mata Atlântica&quot;,&quot;Marinho&quot;,&quot;Marinho&quot;),
-  PrincipaisAmeacas = c(&quot;perda de habitat/degradaçao (induzida por humanos)&quot;,&quot;caça/pesca/captura;perda de habitat/degradaçao (induzida por humanos)&quot;,&quot;perda de habitat/degradaçao (induzida por humanos)&quot;,&quot;agropecuaria;perda de habitat/degradaçao (induzida por humanos);caça/pesca/captura&quot;,&quot;agropecuaria;perda de habitat/degradaçao (induzida por humanos)&quot;,&quot;perda de habitat/degradaçao (induzida por humanos)&quot;,&quot;perda de habitat/degradaçao (induzida por humanos)&quot;,&quot;ameaça desconhecida&quot;,&quot;caça/pesca/captura&quot;,&quot;caça/pesca/captura&quot;),
-  AreasProtegidas = c(&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;, &quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;),
-  PAN = c(&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;, &quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;),
-  OrdenamentoPesqueiro = c(&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;, &quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;,&quot;Não&quot;),
-  ProtecaoNacional = c(&quot;0&quot;,&quot;0&quot;,&quot;0&quot;, &quot;0&quot;, &quot;0&quot;,&quot;0&quot;,&quot;0&quot;,&quot;0&quot;,&quot;0&quot;,&quot;0&quot;),
-  ExclusivaBrasil = c(&quot;Sim&quot;, &quot;Não&quot;,&quot;Sim&quot;,&quot;Não&quot;, &quot;Sim&quot;,&quot;Sim&quot;,&quot;Não&quot;,&quot;Sim&quot;,&quot;Não&quot;,&quot;Não&quot;),
-  EstadosOcorrencia = c(&quot;PE&quot;, &quot;AM;MG;SP&quot;, &quot;PE;AL;PB&quot;, &quot;PR&quot;, &quot;PE;AL&quot;,&quot;PE;AL&quot;,&quot;RS&quot;,&quot;SP&quot;,&quot;SP;SC&quot;,&quot;RS&quot;)
-  )
-
-# Adicionando o novo conjunto de dados ao nosso dataset
-df &lt;- rbind(df,x)</code></pre>
-<p>Agora vamos ver quantos valores únicos existe em cada coluna.</p>
-<pre class="r"><code># Contabilizando o número de valores únicos em cada variável do dataset.
-
-NUniques = sapply(df, function(x) length(unique((x)))) 
-# Determinando o tipo de dado de cada uma das variáveis do dataset.
-
-NUniques = data.frame(NUniques)
-
-# Atribuindo informações sobre o tipo de dado das variáveis ao DataFrame.
-
-NUniques[&#39;dtypes&#39;] = sapply(df, function(x) class((x)))
-
-# Exibindo Dataframe.
-
-NUniques</code></pre>
+<p>Verificando valores únicos existente em cada coluna.</p>
 <pre><code>##                      NUniques    dtypes
 ## Grupao                      2 character
 ## Grupo                      12 character
@@ -515,29 +396,28 @@ NUniques</code></pre>
 ## ProtecaoNacional            6 character
 ## ExclusivaBrasil             3 character
 ## EstadosOcorrencia         570 character</code></pre>
+<pre class="r"><code>df$Id &lt;- paste(toupper(str_sub(df$Especie,0,2)),toupper(str_sub(df$Especie,-2)),toupper(str_sub(df$Familia,0,2)),sep = &quot;&quot;)</code></pre>
+<p>Por fim, após todos os processamentos e depois de salvar os dados, o dashboard foi construído utilizando o <em>software Tableau</em> e publicado no <em>Tableau Public</em>. Confira abaixo o relatório.</p>
 </div>
 </div>
+<style type="text/css">
+	.tableau {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+</style>
 
+	<div class='tableau'>
+		<div class='tableauPlaceholder' id='viz1648933649491' style='position: relative'><noscript><a href='#'><img alt='Inicio ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Es&#47;EspeciesAmeacadas&#47;Inicio&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='EspeciesAmeacadas&#47;Inicio' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Es&#47;EspeciesAmeacadas&#47;Inicio&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='pt-BR' /></object></div> 
+	</div>
 
+<script type='text/javascript'>                    var divElement = document.getElementById('viz1648933649491');                    var vizElement = divElement.getElementsByTagName('object')[0];                    if ( divElement.offsetWidth > 800 ) { vizElement.style.width='1200px';vizElement.style.height='1327px';} else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='1200px';vizElement.style.height='1327px';} else { vizElement.style.width='1200px';vizElement.style.height='1327px';}                     var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
 
 
 </div>
-
-
-<div class='tableauPlaceholder' id='viz1646182589512' style='position: center'>
-	<object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='EspeciesAmeacadas&#47;Inicio' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='pt-BR' />
-	</object>
-</div>                
-<script type='text/javascript'> var divElement = document.getElementById('viz1646182589512');                    
-	var vizElement = divElement.getElementsByTagName('object')[0];                    
-	if ( divElement.offsetWidth > 800 ) { vizElement.style.width='1200px';vizElement.style.height='1327px';} 
-	else if ( divElement.offsetWidth > 500 ) { vizElement.style.width='100%';vizElement.style.height='1427px';} 
-	else { vizElement.style.width='100%';vizElement.style.height='2127px';}                     
-	var scriptElement = document.createElement('script');                    
-		scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    
-		vizElement.parentNode.insertBefore(scriptElement, vizElement);                
-</script>
-
 
 <script>
 
